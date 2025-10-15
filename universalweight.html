@@ -1,0 +1,178 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Universal Weight</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <style>
+   
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 30, 0.6);
+      z-index: -1;
+    }
+
+   
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      color: #aeefff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+    }
+
+    .container {
+      padding: 2rem;
+      background: rgba(20, 20, 40, 0.7);
+      border-radius: 12px;
+      margin-top: 2rem;
+      box-shadow: 0 0 30px rgba(159, 90, 253, 0.4);
+    }
+
+    input[type="number"] {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #9f5afd;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      width: 200px;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      background-color: #9f5afd;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #00eaff;
+      transform: scale(1.05);
+    }
+
+    .planet-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      padding: 2rem;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    .planet-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1rem;
+      backdrop-filter: blur(12px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 20px rgba(159, 90, 253, 0.3);
+      text-align: center;
+    }
+
+    .planet-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(0, 234, 255, 0.6);
+    }
+
+    .planet-card img {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+    }
+
+    .planet-card h4 {
+      margin-top: 0.5rem;
+      color: #aeefff;
+    }
+
+    .tooltip {
+      font-size: 0.8rem;
+      color: #ccc;
+    }
+
+    @media (max-width: 768px) {
+      .planet-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <video autoplay muted loop id="bg-video">
+    <source src="https://cdn.pixabay.com/video/2024/06/07/215696_tiny.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div id="overlay"></div>
+
+  <div class="container">
+    <h1>🌌 Universal Weight Calculator</h1>
+    <label for="weightInput">Enter your weight on Earth (kg):</label><br>
+    <input type="number" id="weightInput" placeholder="e.g. 60" min="1" /><br>
+    <button onclick="calculateWeight()">Calculate</button>
+  </div>
+
+  <div class="planet-grid" id="planetGrid"></div>
+
+  <script>
+    const planets = [
+      { name: "Mars", gravity: 0.38, img: "https://science.nasa.gov/wp-content/uploads/2016/05/1-mars-nasa-gov-jpg.webp?w=400" },
+      { name: "Mercury", gravity: 0.38, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTO7vJO4ALPW87eVDQ0TquSsybHEeFsvC0d726ac6-5NAXX_D28_V2jOS1n0_eFyz-VAFc&usqp=CAU" },
+      { name: "Venus", gravity: 0.91, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTdbnAtFxsWgfXENc0YPUj6HhKkobR3Vnj1w&s" },
+      { name: "Moon", gravity: 0.166, img: "https://flashbak.com/wp-content/uploads/2021/09/05_APOLLO_8_PICTURE_MOON-640x668.jpg" },
+      { name: "Jupiter", gravity: 2.34, img: "https://tse3.mm.bing.net/th/id/OIP.kbUA1PjfgmME0OSR9f2QkAHaHI?w=2400&h=2312&rs=1&pid=ImgDetMain&o=7&rm=3" },
+      { name: "Saturn", gravity: 1.06, img: "https://jundroo.blob.core.windows.net/simplerockets/files/2023/2/18/0ZN0j3/UserView-0.jpg" },
+      { name: "Uranus", gravity: 0.92, img: "https://png.pngtree.com/png-vector/20240719/ourmid/pngtree-a-blue-planet-png-image_13149185.png" },
+      { name: "Neptune", gravity: 1.19, img: "https://images.squarespace-cdn.com/content/v1/52c1f91ee4b0a77a50337e61/1531597692173-0XXZCJCQX8CV8Q24OQA3/neptune-transparent.png" },
+      { name: "Pluto", gravity: 0.063, img: "https://tse3.mm.bing.net/th/id/OIP.dAQVmIIGk__oHNnwbKnbUQHaHa?w=512&h=512&rs=1&pid=ImgDetMain&o=7&rm=3" }
+    ];
+
+    function calculateWeight() {
+      const weight = parseFloat(document.getElementById("weightInput").value);
+      const grid = document.getElementById("planetGrid");
+      grid.innerHTML = "";
+
+      if (!weight || weight <= 0) {
+        alert("Please enter a valid weight.");
+        return;
+      }
+
+      planets.forEach(planet => {
+        const planetWeight = (weight * planet.gravity).toFixed(2);
+        const card = `
+          <div class="planet-card" title="Gravity: ${planet.gravity}">
+            <img src="${planet.img}" alt="${planet.name}" />
+            <h4>${planet.name}: ${planetWeight} Kg</h4>
+            <div class="tooltip">Gravity: ${planet.gravity}</div>
+          </div>
+        `;
+        grid.innerHTML += card;
+      });
+    }
+  </script>
+</body>
+</html>
